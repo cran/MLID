@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Richard Harris" />
+
+<meta name="date" content="2017-02-23" />
+
+<title>Fitting a multilevel index of segregation in R: using the MLID package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Fitting a multilevel index of segregation in R: using the MLID package</h1>
+<h4 class="author"><em>Richard Harris</em></h4>
+<h4 class="date"><em>2017-02-23</em></h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This tutorial introduces the tools and functions available in the MLID package to fit a multilevel index of dissimilarity, a measure of ethnic or social segregation that captures both of the two principal dimensions of segregation - unevenness and spatial clustering - and looks for scale effects as well as the contributions of particular places to the index value.</p>
+<p>To begin, install the package from CRAN by typing</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;MLID&quot;</span>)</code></pre></div>
+<p>Or, for the latest development version:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Needs devtools. Use: install.packages(&quot;devtools&quot;)</span>
+<span class="kw">require</span>(devtools)
+devtools::<span class="kw">install_github</span>(<span class="st">&quot;profrichharris/MLID&quot;</span>)</code></pre></div>
+<p>Next, load the package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">require</span>(MLID)</code></pre></div>
+<div id="about-the-index-of-dissimilarity" class="section level3">
+<h3>About the Index of Dissimilarity</h3>
+<p>The index of dissimilarity (ID) widely is used in social and demographic research and examines whether the places where one population group are most likely to be located are the places where another group is most likely to be present too. The logic of the index is that if, for example, 1 per cent of population group Y resides in a neighbourhood then, all things being equal, 1 per cent of population group X ought to reside there too. If another neighbourhood is a little bigger and contains 2 per cent of all the Y group then it should contain 2 per cent of all the X group as well. In this way, if the share of the Y group is equal to the share of the X group in each and every neighbourhood then the two populations are said to have an even geographical distribution, described as a situation of ‘no segregation’. However, if wherever the Y population is found, X is not (and vice versa) then there is a situation of ‘complete segregation’.</p>
+<p>The ID measures unevenness - how unevenly the two groups are distributed across the study region relative to one another and regardless of how big or small each group is in the total population (all that matters is the share of each group in each neighbrouhood). However, unevenness is only one of the two principal dimensions of segregation. The other is spatial clustering. Although the ID measures the scale of segregation in a numeric sense, giving an amount of segregation, it does not do so in a geographic sense. The classic example is to compare a checkerboard-style pattern of alternating back-white squares with other patterns that have increasing amounts of spatial clustering. In each of the examples below, the ID is the same, showing complete black-white segregation, yet the pattern of spatial clustering is not.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p>A multilevel index of dissimilarity (MLID) improves upon the standard ID by capturing both the unevenness and the clustering. To see this, run the examples in the MLID package. Note that although the ID value is always 1.000 the other measures, Pvariance and Holdback, change with the geographical scale of segregation. Those other measures are explained later. All that matters for now is that they are sensitive to the pattern of spatial clustering whereas the standard ID is not.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">checkerboard</span>()</code></pre></div>
+<p><br> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAABlBMVEUAAAD///+l2Z/dAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAC6UlEQVR4nO3QMa5YVwxDwe/9bzpFaloIAtycFw9LspHm55f8Nj//9QH1ADoC6AigI4COADoC6AigI4COADoC6AigI4COADoC6AigI4COADoC6AigI4COADoygX7+tPxLoP//uhxGX30DEKDquhxGX30DEKDquhxGX30DEKDquhxGX30DEKDquhxGX30jBBS5+9UKCBAgQIDCKyBAgAABCq+AAAEC9C2gxt3v1uUw+uobgABV1+Uw+uobgABV1+Uw+uobgABV1+Uw+uobgABV1+Uw+uobgL4DFLn71QoIECBAgMIrIECAAAEKr4AAAQL0LaDG3e/W5TD66huAAFXX5TD66huAAFXX5TD66huAAFXX5TD66huAAFXX5TD66huAvgMUufvVCggQIECAwisgQIAAAQqvgAABAvQtoMbd79blMPrqG4AAVdflMPrqG4AAVdflMPrqG4AAVdflMPrqG4AAVdflMPrqG4C+AxS5+9UKCBAgQIDCKyBAgAABCq+AAAEC9C2gxt3v1uUw+uobgABV1+Uw+uobgABV1+Uw+uobgABV1+Uw+uobgABV1+Uw+uobgL4DFLn71QoIECBAgMIrIECAAAEKr4AAAQL0LaDG3e/W5TD66huAAFXX5TD66huAAFXX5TD66huAAFXX5TD66huAAFXX5TD66huAvgMUufvVCggQIECAwisgQIAAAQqvgAABAvQtoMbd79blMPrqG4AAVdflMPrqG4AAVdflMPrqG4AAVdflMPrqG4AAVdflMPrqG4C+AxS5+9UKCBAgQIDCKyBAgAABCq+AAAEC9C2gxt3v1uUw+uobgABV1+Uw+uobgABV1+Uw+uobgABV1+Uw+uobgABV1+Uw+uobgL4DFLn71QoIECBAgMIrIECAAAEKr4AAAQL0LaA/Lf8USP4OoCOAjgA6AugIoCOAjgA6AugIoCOAjgA6AugIoCOAjgA6AugIoCOAjgA6AugIoCOAjgA68hcAQNCwKgruIAAAAABJRU5ErkJggg==" /><!-- --><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAACVBMVEUAAAC+vr7////xRzILAAAACXBIWXMAAA7DAAAOwwHHb6hkAAACbElEQVR4nO3awUpjQQBE0ej/f7QLVwa0kKS6Xsi5O2EKnGO/TdO3T/3Zbf0LXD1AIUAhQCFAIUAhQCFAIUAhQCFAIUAhQCFAIUAhQCFAIUAhQCFAIUAhQKFfgW7v1oNAH3c//vzH9z++4BYQIECAlltAgAABWm4BAQIEaLkF9HSgj/fKCfKJAQK03AICBAjQcgsIECBAyy0gQK47qj18gp73t7rmFhAgQIAAXXgLCBAgQIAuvAUECNDFgNb3D4f7P9ADf433OEEv+J8EBAjQZbeAAAGqbgEBAlTdAgIEqLp13RHyPsgDKkCAlltAgAABWm4BAQIEaLkFBOg00Pr+4XBOkE8MEKDlFhAgQICWW0CAAAFabgEBct1RzfsgD6gAVbeAAAGqbgEBAlTdAgIEqLoFBOg00Pr+4XBOkE8MUHULCBCg6hYQIEDVLSBAgKpbQIBcd1TzPsgDKkCAlltAgAABWm4BAQIEaLkFBOg00Pr+4XBOkE8MEKDlFhAgQICWW0CAAAFabgEBct1RzfsgD6gAVbeAAAGqbgEBAlTdAgIEqLoFBOg00Pr+4XBOkE8MUHULCBCg6hYQIEDVLSBAgKpbQIBcd1TzPsgDKkCAlltAgAABWm4BAQIEaLkFBOg00Pr+4XBOkE8MEKDlFhAgQICWW0CAAAFabgEBct1RzfsgD6gAVbeAAAGqbgEBAlTdAgIEqLoFBOg00Pr+4XBOkE8MUHULCBCg6hYQIEDVLSBAgKpbQIBOA71b/wXSd4BCgEKAQoBCgEKAQoBCgEKAQoBCgEKAQoBCgEKAQoBCgEKAQoBCgEKAQoBCgEJfxbqf5+Y1ARQAAAAASUVORK5CYII=" /><!-- --><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAACVBMVEUAAAC+vr7////xRzILAAAACXBIWXMAAA7DAAAOwwHHb6hkAAACuklEQVR4nO3YQU7DQBQFQcf3PzRSWBEJtyzz7QTX26UXTFRMNrOstrnl6i/w7gMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFPsVaLnbDgI9dn38+af2fbzoXECAAAF6fgQECBCgFVB1QNEBRQcUHVB0QNHX5XGvuUF+YoAAPT8CAgQI0AqoOqDogKIDig4oOqDogKJ77kggN2izA4oOKDqg6ICiA4oOKDqg6ICiA4oOKDqg6ICiA4ruuSOB3KDNDig6oOiAogOKDig6oOiAogOKDig6oOiAogOKDii6544EOvLP+cDbBwgQIECAAAECBAgQIECAAP0DoKvfH07efqBd/7qXj7e4QRd9UUCAAI1+UUCAAI1+UUCAAI1+UUCAAI1+0c8Buvr94eS5QX5igEbPBQQI0Oi5gAABGj0XECBAo+cCAuS5Y3RukJ8YoNFzAQECNHouIECARs8FBAjQ6LmAAHnuGN1+oA+8BUfOBQQIEKDnR0CAAAFaAVUHFB1QdEDRAUUHFN1zRwK5QZsdUHRA0QFFBxQdUHRA0QFFBxQdUHRA0QFFBxQdUHTPHQnkBm12QNEBRQcUHVB0QNEBRQcUHVB0QNEBRQcUHVB0QNE9dySQG7TZAUUHFB1QdEDRAUUHFB1QdEDRAUUHFB1QdEDRAUX33JFAe/jf5BYcORcQIECj5wICBGj0XECAAI2eCwgQoNFzAf050NXvDyfPDfITAzR6LiBAgEbPBQQI0Oi5gAABGj0XECDPHaNzg/zEAI2eCwgQoNFzAQECNHouIECARs8FBMhzx+jcID8xQKPnAgIEaPRcQIAAjZ4LCBCg0XMBATob6G7bC2TfAxQDFAMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFAMUAxQDFPsCpLaf57+4fNAAAAAASUVORK5CYII=" /><!-- --><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAACVBMVEUAAAC+vr7////xRzILAAAACXBIWXMAAA7DAAAOwwHHb6hkAAACjklEQVR4nO3YQY7UQABD0Rnuf2ikZgUl+Gr1OAH6eWd5E71Uberjm/wxH3d/wN8eQBFAEUARQBFAEUARQBFAEUARQBFAEUARQBFAEUARQBFAEUARQBFAEUCR3wJ9vFteBPq8rP78GZdVQIAATSsgQICmFRAgQNMKCBCgaQX05UCf7xUnyBUDNK2AAAGaVkCAAE0rIECAphUQIM8d0zhBrhigaQUECNC0AgIEaFoBAQI0rYAAee6YxglyxQBNKyBAgKYVECBA0woIEKBpBQTIc8c0TpArBmhaAQECNK2AAAGaVkCAAE0rIECeO6ZxglwxQNMKCBCgaQUECNC0AgIEaFoBAfLcMY0T5IoBmlZAgABNKyBAgKYVECBA0woIkOeOaZwgVwzQtAICBGhaAQECNK2AAAGaVkCAPHdM8/IJeuZvvFRvOrmAAAECBAgQIECAAAECBAjQfwB09/vDxXke6Knf/oX1nzlBl4n8UgEBAgToHADFACgGQDEAigFQDIBiABQDoBgAHcPd7w8XxwlyxQABelRAgAABOgdAMQCKAVAMgGIAFAOgGAAdw93vDxfHCXLFAAF6VECAAAE6B0AxAIoBUAyAYgAUA6AYAB3D3e8PF8cJcsUAAXpUQIAAAToHQDEAigFQDIBiABQDoBgAHcPd7w8XxwlyxQABelRAgAABOgdAMQCKAVAMgGIAFAOgGAAdw93vDxfHCXLFAAF6VECAAAE6B0AxAIoBUAyAYgAUA6AYAB3D3e8PF8cJcsUAAXpUQIAAAToHQDEAigFQDIBiABQDoBgAHcO75Vkg+RFAEUARQBFAEUARQBFAEUARQBFAEUARQBFAEUARQBFAEUARQBFAEUARQBFAEUCR72Kun+eGGyB8AAAAAElFTkSuQmCC" /><!-- --> <br> <em>Figure 1. Each of these patterns generates the same ID value yet they represent different degrees of spatial clustering. The multilevel index distinguishes between them.</em></p>
+<p><br></p>
+</div>
+</div>
+<div id="calculating-the-id-and-mlid" class="section level2">
+<h2>Calculating the ID and MLID</h2>
+<p>The index of dissimilarity is calculated as <span class="math display">\[
+\text{ID}=k\times\sum_i{\big|\frac{n_{yi}}{n_{y+}}-\frac{n_{xi}}{n_{x+}}\big|}
+\]</span> where <span class="math inline">\(n_{yi}\)</span> is the count of population group Y in neighbourhood <span class="math inline">\(i\)</span>, <span class="math inline">\(n_{y+}\)</span> is the total count of Y across all neighbourhoods in the study region (<span class="math inline">\(n_{y+} = \sum_i{n_{yi}}\)</span>), and <span class="math inline">\(n_{xi}\)</span> and <span class="math inline">\(n_{x+}\)</span> are the corresponding values for population group X. Setting the scaling constant to be <span class="math inline">\(k = 0.5\)</span> means that the maximum range for the ID is from 0 to 1.</p>
+<p>The index summarises the differences between a set of observed values, <span class="math inline">\(y_i = n_{yi}/n_{y+}\)</span> and what those values would be under an expectation of ‘zero segregation’, <span class="math inline">\(x_i = n_{xi}/n_{x+}\)</span>, which is when the share of the Y population per neighbourhod everywhere is equal to the share of the X population. Substituting <span class="math inline">\(y_i\)</span> and <span class="math inline">\(x_i\)</span> for <span class="math inline">\(n_{yi}/n_{y+}\)</span> and <span class="math inline">\(x_i = n_{xi}/n_{x+}\)</span> in the formula gives <span class="math display">\[\text{ID}=0.5\sum_i{|y_i-x_i|}\]</span> Writing this within a regression framework, <span class="math display">\[y_i=\beta_0 + \beta_1x_i+\epsilon_i\]</span> Setting <span class="math inline">\(\beta_0 = 0\)</span> and <span class="math inline">\(\beta_1 = 1\)</span>, and rearranging gives <span class="math display">\[\epsilon_i = y_i - x_i\]</span> from which the ID can be calculated as <span class="math display">\[\text{ID} = 0.5\sum_i|\epsilon_i|\]</span> This shows that the ID is half the sum of the absolute values of the residuals from a regression model where the dependent variable is the share of the Y population per neighbourhood, the intercept is zero and there is an offset, which is the share of the X population.</p>
+<p>The multilevel model is achieved by estimating what of the residuals is due to different levels of a geographic hierarchy. For example, for a four level model where neighbourhoods at level <span class="math inline">\(i\)</span> group into districts at level <span class="math inline">\(j\)</span>, those into larger administrative authorities at level <span class="math inline">\(k\)</span>, and then into regions at level <span class="math inline">\(l\)</span>, the residuals can be estimated as <span class="math display">\[\epsilon_i = \hat\lambda_i + \hat\mu_j + \hat\nu_k + \hat\xi_l\]</span> giving <span class="math display">\[\text{ID}= 0.5\sum_i|\hat\lambda_i + \hat\mu_j + \hat\nu_k + \hat\xi_l|\]</span> The geographical scales of segregation are then explored by looking at the residuals at each level, as the following case study demonstrates</p>
+<p><br></p>
+</div>
+<div id="case-study" class="section level2">
+<h2>Case Study</h2>
+<div id="fitting-and-exploring-the-standard-id" class="section level3">
+<h3>Fitting and exploring the standard ID</h3>
+<p>The data frame</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(ethnicities)</code></pre></div>
+<p>contains counts of various ethnic groups living in census small areas in England and Wales in 2011. Those small areas are called Output Areas (OAs).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(ethnicities, <span class="dt">n =</span> <span class="dv">3</span>)</code></pre></div>
+<pre><code>##          OA Persons WhiteBrit Irish OtherWhite Mixed Indian Pakistani
+## 1 E00000001     194       150     7         18    10      2         0
+## 2 E00000003     250       177     2         26     9     17         0
+## 3 E00000005     367       254    14         53    12      9         1
+##   Bangladeshi Chinese OtherAsian BlkAfrican BlkCaribbean OtherBlk Arab
+## 1           0       4          0          0            0        0    0
+## 2           3       3          3          3            0        0    0
+## 3           0      10          5          2            0        2    0
+##   Other      LSOA      MSOA            LAD    RGN
+## 1     3 E01000001 E02000001 City of London London
+## 2     6 E01000001 E02000001 City of London London
+## 3     5 E01000001 E02000001 City of London London</code></pre>
+<p>To calculate the index of dissimilarity for the residential segregation of the Bangladeshi from the White British, we may use</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">index &lt;-<span class="st"> </span><span class="kw">id</span>(ethnicities, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">&quot;Bangladeshi&quot;</span>, <span class="st">&quot;WhiteBrit&quot;</span>))
+index</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit 
+## ID:  0.852
+## E(ID):   (not calculated)</code></pre>
+<p>which generates an ID value of 0.852. The interpretation is that 85.2 per cent of either the Bangladeshi or White British populations would need to move for both to be evenly distributed relative to one another. It seems a lot and reflects the concentration of the Bangladeshi population in particular parts of the country such as London, and especially the Boroughs of Tower Hamlets and Newham within the capital, which the following ‘impact’ calculations reveal.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">impx &lt;-<span class="st"> </span><span class="kw">impacts</span>(ethnicities, <span class="kw">c</span>(<span class="st">&quot;Bangladeshi&quot;</span>, <span class="st">&quot;WhiteBrit&quot;</span>), <span class="kw">c</span>(<span class="st">&quot;LAD&quot;</span>,<span class="st">&quot;RGN&quot;</span>))
+<span class="kw">head</span>(impx, <span class="dt">n =</span> <span class="dv">3</span>)</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit</code></pre>
+<pre><code>## $LAD
+##               pcntID pcntN impact scldMean scldSD scldMin scldMax pNYgtrNX
+## Tower Hamlets  10.58  0.41   2566     7.91   6.85   -0.13   30.78     44.5
+## Newham          4.82  0.45   1080     3.33   2.41   -0.17   16.57     35.8
+## Oldham          2.18  0.39    555     1.51   4.97   -0.33   37.50      7.9
+## 
+## $RGN
+##               pcntID pcntN impact scldMean scldSD scldMin scldMax pNYgtrNX
+## London         29.70 13.81    215     0.54   2.01   -0.43   30.78      2.9
+## West Midlands  10.97  9.88    111     0.03   0.94   -0.69   24.06      1.7
+## North West     12.02 12.87     93    -0.05   1.12   -1.01   37.50      0.5</code></pre>
+<p>The impact calculations take advantage of two things. First, that the census geography is hierarchical and so OAs can be matched to higher-level areas, in this case local authority districts (LADs) and government regions (RGN), as they have been in the data. To confirm this, look again at,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(ethnicities)</code></pre></div>
+<p>Second, they use the knowledge that the <span class="math inline">\(\text{ID}\propto\sum_i|\epsilon_i|\)</span> where each <span class="math inline">\(\epsilon_i\)</span> is a local value - the difference in the share of the Bangladeshi and the share of the White British populations per OA. Those small areas differences can be summarised by a higher-level geography. For example, the differences in the shares of the two population groups within Tower Hamlets can be summarised as <span class="math inline">\(\sum_i w_i |\epsilon_i|\)</span> where <span class="math inline">\(w_i = 1\)</span> if the OA is located in Tower Hamlets, otherwise <span class="math inline">\(0\)</span>. As a percentage of the overall ID for England and Wales, OAs within Tower Hamlets contribute, <span class="math display">\[\text{pcntID} = \frac{\sum_i w_i |\epsilon_i|}{\sum_i |\epsilon_i|}\times100\]</span></p>
+<p>which is 10.58 per cent. This is a disproportionate amount because only 0.41 of all OAs are in Tower Hamlets. Calculating 10.58 <span class="math inline">\(\div\)</span> 0.41 <span class="math inline">\(\times\)</span> 100 gives the impact of the neighbourhoods within Tower Hamlets upon the overall ID, and is 2566 - i.e. 25.66 times greater than expected. This impact could be because the shares of the Bangladeshi population exceed the shares of the White British or it could be the other way around. It is the former: on average the share of the Bangladeshi population is greater than the share of the White British in Tower Hamlets, shown by the positive value for the mean difference, scldMean. This is calculated as, <span class="math display">\[\text{scldMean} = \frac{\sum_i w_i \epsilon_i}{\sigma_\epsilon\sum_i w_i}\]</span> which simply is the average difference within Tower Hamlets (<span class="math inline">\(\bar{\epsilon}_k\)</span>) , scaled by <span class="math inline">\(\sigma_\epsilon\)</span>, the standard deviation of the <span class="math inline">\(\epsilon_i\)</span>.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> As a rule of thumb, values with a magnitude greater than 2 may be regarded as unusual, which here include Tower Hamlets and Newham. Within both, and especially Tower Hamlets, there is variation from one OA to the next: the standard deviation for the <span class="math inline">\(\epsilon_i\)</span> values in Tower Hamlets alone is 6.85 greater than for all of England and Wales. In at least one Tower Hamlets neighbourhood the share of the Bangladeshi population is less than the share of the White British (because the minimum value of <span class="math inline">\(\epsilon_i\)</span>, scldMin is negative) and in one it is much greater (the maximum value is 30.78; both the minimum and maximum are scaled by <span class="math inline">\(\sigma_\epsilon\)</span> ). Overall, whilst Tower Hamlets is a place within which the Bangladeshi population seems to be disproportionately concentrated relative to the White British, a sense of perspective is deserved: a minority (44.5 per cent) of its neighbourhoods have more Bangladeshi residents than they do White British so the White British are the more prevalent group.</p>
+</div>
+<div id="finding-the-expected-value-and-aggregating-the-data" class="section level3">
+<h3>Finding the expected value and aggregating the data</h3>
+<p>Although in principle the ID ranges from zero (‘no segregation’) to one (‘complete segregation’), in practise, when the two population groups are of very different sizes (and especially when one is small) it is very difficult, if not impossible, for them to be evenly distributed relative to one another. In the current case study, the Bangladeshi group comprise 0.8 of the population of England and Wales, whereas the White British comprise 80.5. With 181408 neighbourhoods to be spread across, there are simply too few Bangladeshis for their distribution to match that of the White British.</p>
+<p>An expected value for the ID may be generated that essentially is the value that would arise, on average, if the Bangladeshi and White British populations randomly were assigned to the existing neighbourhoods whilst broadly respecting the population size of each neighbourhood as well as the total number of Bangladeshi and White British overall. The value is obtained by simulation, for which the total population in each neighbourhood should be supplied:<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">index &lt;-<span class="st"> </span><span class="kw">id</span>(ethnicities, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">&quot;Bangladeshi&quot;</span>, <span class="st">&quot;WhiteBrit&quot;</span>, <span class="st">&quot;Persons&quot;</span>), <span class="dt">expected =</span> <span class="ot">TRUE</span>)
+index</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit 
+## ID:  0.852
+## E(ID):   0.251 (29.5%)</code></pre>
+<p>In this example, the expected value under randomisation is 0.251 which is 29.5 per cent of the actual ID score. Is that a lot? The answer is a matter of judgment but certainly it is sizable. It suggests that perhaps there are too few of the Bangladeshi population to be analysed at the OA scale.</p>
+<p>An option is to take advantage of the census’ geographical hierarchy and aggregate the OAs into what are called Lower Level Super Output Areas (LSOAs), calculating and using the population counts for those areas instead. The ethnicities data shows which LSOA each OA belongs to. For example, OA E00000001 is in LSOA E01000001:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(ethnicities, <span class="dt">n =</span> <span class="dv">1</span>)</code></pre></div>
+<pre><code>##          OA Persons WhiteBrit Irish OtherWhite Mixed Indian Pakistani
+## 1 E00000001     194       150     7         18    10      2         0
+##   Bangladeshi Chinese OtherAsian BlkAfrican BlkCaribbean OtherBlk Arab
+## 1           0       4          0          0            0        0    0
+##   Other      LSOA      MSOA            LAD    RGN
+## 1     3 E01000001 E02000001 City of London London</code></pre>
+<p>Because the higher-level groupings are known, to aggregate the data and recalculate the ID is simple,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">aggdata &lt;-<span class="st"> </span><span class="kw">sumup</span>(ethnicities, <span class="dt">sumby =</span> <span class="st">&quot;LSOA&quot;</span>, <span class="dt">drop =</span> <span class="st">&quot;OA&quot;</span>)
+<span class="kw">head</span>(aggdata, <span class="dt">n =</span> <span class="dv">3</span>)</code></pre></div>
+<pre><code>##        LSOA Persons WhiteBrit Irish OtherWhite Mixed Indian Pakistani
+## 1 E01000001    1465       968    32        237    54     49         3
+## 9 E01000002    1436      1024    28        222    54     30         0
+## 5 E01000003    1346       813    37        205    55     48         6
+##   Bangladeshi Chinese OtherAsian BlkAfrican BlkCaribbean OtherBlk Arab
+## 1           3      44         29          6            1        4    6
+## 9           0      37         28          0            3        1    3
+## 5           9      44         61         23           13        9   13
+##   Other      MSOA            LAD    RGN
+## 1    28 E02000001 City of London London
+## 9     6 E02000001 City of London London
+## 5    10 E02000001 City of London London</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">index &lt;-<span class="st"> </span><span class="kw">id</span>(aggdata, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">&quot;Bangladeshi&quot;</span>, <span class="st">&quot;WhiteBrit&quot;</span>, <span class="st">&quot;Persons&quot;</span>), <span class="dt">expected =</span> <span class="ot">TRUE</span>)
+index</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit 
+## ID:  0.772
+## E(ID):   0.11 (14.2%)</code></pre>
+<p>The ID is now 0.772 with a much smaller expected value of 0.11. The impacts of Tower Hamlets and Newham on the ID remain pronounced.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw">impacts</span>(aggdata, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">&quot;Bangladeshi&quot;</span>, <span class="st">&quot;WhiteBrit&quot;</span>), <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;LAD&quot;</span>, <span class="st">&quot;RGN&quot;</span>)), <span class="dt">n =</span> <span class="dv">3</span>)</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit</code></pre>
+<pre><code>## $LAD
+##               pcntID pcntN impact scldMean scldSD scldMin scldMax pNYgtrNX
+## Tower Hamlets  11.68  0.41   2818     9.18   5.64    0.19   24.48     49.3
+## Newham          5.33  0.47   1128     3.68   1.80    0.01   10.26     40.2
+## Oldham          2.34  0.41    576     1.70   4.86   -0.34   35.93      8.5
+## 
+## $RGN
+##               pcntID pcntN impact scldMean scldSD scldMin scldMax pNYgtrNX
+## London         30.29 13.91    218     0.63   2.02   -0.28   24.48      3.0
+## West Midlands  11.18 10.03    111     0.04   0.94   -0.43   18.06      2.0
+## North West     12.21 12.94     94    -0.05   1.10   -0.50   35.93      0.4</code></pre>
+<p>Generally, the affect of aggregation is to smooth over some of the variations in the data that may be ‘noise’ due to the small population size. However, it also risks smoothing out the geographical detail (which is why the ID tends to decrease with aggregation) so there is a cost as well as a benefit.</p>
+</div>
+<div id="fitting-a-multilevel-index" class="section level3">
+<h3>Fitting a multilevel index</h3>
+<p>So far we have been fitting the standard index of dissimilarity, aggregating the local differences in the shares of the populations into higher-level geographies and thereby assessing the contributions of those higher-level geographies on the overall ID. The methods take advantage of the hierarchical structure of the data but there is nothing specifically multilevel about them in the sense of multilevel modelling. They are useful for identifying places that contribute most to the ID score but not on separating out the scale effects due to each level <em>net</em> of the other levels. To achieve the latter, we need to handle the regression residuals in a different way using a multilevel model.</p>
+<p>As an example, consider a four level model with LLOAs as the base, Middle Level Super Output Areas (MSOAs) as the next level up, LADs above that and finally regions. To fit the model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">index &lt;-<span class="st"> </span><span class="kw">id</span>(aggdata, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">&quot;Bangladeshi&quot;</span>, <span class="st">&quot;WhiteBrit&quot;</span>), <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;MSOA&quot;</span>,<span class="st">&quot;LAD&quot;</span>,<span class="st">&quot;RGN&quot;</span>))
+index</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit 
+## ID:  0.772
+## E(ID):   (not calculated)
+## 
+##      Pvariance Holdback
+## Base     25.41    -7.44
+## MSOA     32.42    -9.02
+## LAD      35.92    -5.09
+## RGN       6.25   -14.96</code></pre>
+<p>The ID value is unchanged and we have chosen to omit the expected value because it is known already. What we do now have are the Pvariance and Holdback scores at each of the levels.</p>
+<p>The Pvariance is the percentage of the total variance due to each level. For example, <span class="math display">\[\text{Pvariance}\;_{Base} = \frac{\hat{\sigma}_i}{\hat{\sigma}_i + \hat{\sigma}_j + \hat{\sigma}_k + \hat{\sigma}_l}\times100 \]</span></p>
+<p>It is a measure of spatial clustering, of the pattern of segregation. What the results show is that the pattern of Bangladeshi - White British residential segregation is primarily at the LAD and MSOA scales.</p>
+<p>The Holdback scores are different. They consider what the change would be to the ID score if the effect on it due to the level was set to zero. For example, holding back the regional effect reduces the ID by -14.96 per cent. The holdback score at that level is calculated as, <span class="math display">\[\text{Holdback}\;_l = \frac{(0.5\sum_i{|\hat\lambda_i + \hat\mu_j + \hat\nu_k + 0|)}-\text{ID}}{\text{ID}} \times100 \]</span> It may seem odd that in the results above the Holdback score is greatest where Pvariance is least, at the regional scale. However, there is no contradiction because they measure different things. The model is additive so any uplift (or decrease) in segregation that is due to the regional scale applies to all the neighbourhoods within that region, whereas the change due to the LAD scale, for example, is restricted to the smaller sub-group of neighbourhoods that are in that local authority. It is entirely possible for the proportion of the variance to be small at the higher levels but for the differences between places at those levels to still have a strong cumulative effect upon all the lower levels to which they must be added. This will be picked-up on by the holdback scores.</p>
+<p>From the initial analysis it may be suspected that the LAD variance is being driven by Tower Hamlets and Newham. This is confirmed by plotting the residuals at each level and their confidence intervals using ‘caterpillar plots’:<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ci &lt;-<span class="st"> </span><span class="kw">confint</span>(index)
+<span class="kw">catplot</span>(ci, <span class="dt">grid =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAtFBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZmYAZrY6AAA6ADo6AGY6Ojo6OmY6OpA6ZmY6ZpA6ZrY6kLY6kNtJSQBJtv9mAABmADpmAGZmOgBmOmZmOpBmZjpmZpBmtrZmtttmtv+QOgCQOjqQOmaQZgCQZmaQtpCQ2/+2ZgC2Zjq2kJC225C2/7a2///bkDrbkGbbkJDbtmbb25Db29vb/7bb/9vb////tmb/25D/29v//7b//9v///8aPY6jAAAACXBIWXMAAA7DAAAOwwHHb6hkAAALuElEQVR4nO2di3rjthGFaaeq7G69cZWqm3TbykkacZsYbdxWVGW+/3sVg4tEygQHIAERps75dq0LxwT5ezAAwQFY1FCviqkPIHcBECMAYgRAjACIEQAxAiBGAMQIgBgBECMAYgRAjACIEQAxAiBGAMQIgBgBECMAYgRAjACIEQAxAiBGAMQIgBgBECMAYgRAjACIEQAxAiBGAMQoO0CiuNk2PlZFcftsNmgtdhc9ntwBlRLJxmyw2lzyeDIHdFhLIEuzwapFMLUyB1QVN59NHRP6lZAtL3g8mQMqi8XLXbHSGzQoSeiSYShvQBLG6vVJAxGnaG3eXER5A6rog/mmAeiSQShvQCU5z17XMQDSap6+RHPq+wCQVvP0W10fC0jGJMQgLYnCankERF9eeTNvtZI1TKHQPoOOolYDkGhcZWxwqWF04vCHY7CRrrTY4WI1TwEQIwBiBECMAIgRADECIEYAxAiAGAEQIwBiBECMAIgRADECIEYAxAiAGAEQIwBiBECMAIgRADECIEYAxAiAGAEQIwBiBECMAIgRADECIEaRARXvRlMBiru7dAIgRoGA1KQao1E5tnMFFLfcRg2vFHN31uX+Uf4oz7cfPtk/0j9SJSROCagdAk8n2yUG0OHPGQGy1Wx0FesCVBbF8vWH58OftvKc5YdVLT5QQRYQba/3H9fFiqZn0O8oo7JYVmnSfgcAKhc7IQ/yzuNwhLPamCrW+EYBqpaEQWyqD5tqRR/ERqgccT0bYyM5vX6/3f/u+bCWsDbyd7SRpPllW//b92QCFA7osF7V1WJXCz4PWdxsZXDpJKR398aDhDSuVvvHf/70+GWrEp5XQs2Ssx4kKH+eMP3wrAFpIwnIzPWJrSGANrX8E6r//Xp9oj9+2Tlh4m25DQ96/f7r//79L7tKTyBsApIfyIMagLSRikH7hwSBKBzQ69OqliEiDSAdY2pZrcqVmcncAiTd5ObzxgL6pij+qIxuf1kvftTNoJ7DIn/q3bQOp8uZOaoDYpCQQVMefowqNk7S3SRV6VHm42In3wuis6mW8u1ZuzjMwYY089InZEvm04hV5zNuwi9x+iUZHD2ZXE2YWqkAlTYmCWrozCEbK6Faw99/e/vzw07YlnGpGgNpVZ1mUiXtB5WyrP1dZ+iMA0hI96y+MpOhyIOeqDByK1nFjh5DjR7FBPVZ/qQo9kBdhP09ffui30ujT8pOqN+0fa6UgHRPQHS6Wqx+pzyP/+1U40ch6+azBEQnqTeVesaPjvy2in2hGE+eckOY6Fv7XoOrTbd+FXigjVbM91qsUtWr6pzWFguQaLR0teZwr8tTrqH8oA2oWsr31S05iwb0q31/AtQI7oM9qOJjkPagbsNIQVqeuO4p6o+yntiQpM9WAWpVsfrw3XfPZFtZD/rVvqe4Lu2qxcv9Vgb6wAN9Y9jdfLdNEscgdZWhf5qLDnUtor5V9MykOj0j0cYkOnBZDX673mhA/7HvqT2MGKQ9XEgdbXf39gqGO7qDb/Ryp9ZgQIf1qDnXMwZkW7Fxc2ZnDOjC5U4tAGKEQXtGAzyoUi13dwc5frlTa8h4kFlLbVSUnjEgGlEk+XQUI5Q7tYaNKJJKeJDDUI8RCp8YRPciuvuTcwakmzIf/6GbH44e96wB+UpXxrQDZsmVdETx3l0LAaimdu6X9dlwR+xB+/QK7kmv/Idc1Wprtts0tNypldKDdEOXbsj1IkoKSKHpznKYMyDKXhA+7bz2ne5QPWdAsgu9v1t6DNrri5Krq2J02tSZ9rgWo+tZe2UytNypNQwQ3c/xGbSvrvKuRrk8rBc7DNo7DWVH6Gbr6N7EL3dqYUyaEQAxGjjcsdiV4zIm5wyoutkKCtKjCM0YEHVsqIODe/MOQ+oHESAM2jsMrQdh0N5lqGOQGDczYs6A9KC9741Vh6PNGlCIKsewyIwBOS7Pu+V8QtOMAdlbz14Six+vDlBI+76/37Zj0OzvatQhieSqNiJI96inuwRAtRmuByC37DNkru22T5jgQYwAiBEH6NTgq3k6Z2sHqKmqk2rqNOBGl2j/4fH9AyJFTQNuAnoUG7O4wsouvvDyUV2rtNdbGFPu4AP1N4ycBtyoYo+HT892gpxZfEFWOzNPvrHewohiRxyot2HkNOCmB6npknopBbP4AlWxL9uz9RZGFDviQL0Nk6UBE4yy2OilFMziCxrQ2XoLI4qNcqCcYUAacFC5BEPVIdW31IsvaEDt9RayB+SfBhyj3KmFO6uMAIhR0lvP6hHD15cf5H3r+fVJPQT+2tKA/W89X2LtjuRKf+s57dodyZX+1nN5bR4UeOu5akXpzrsaWd/jSH3rufKYUJczn9T9oMq1dF9jd3nfJUsLSDiXNjwDlC+jtPfF3HHqLAbNBlDQkKtjbaU35c4JUJDMfTGfflC2fHK5WJ2VB0VbLvldaACggOWSQ8rN1ImGXIt5L5ccUm6ujf2wi1W/5ZKDyrWAcoM07GLVb7nksHIzTT4bEIP8l0sOKvfoQO8eUMByyYHlWkLWj3Kocpn0g1qbTr5UTN+FzBZQl04GcQ+mT4OqGA24ej2C4M2K5F7lugkdHetyjIZ1FGu/pUppONqRJsMCqvU/J61TTUxLK2V2h05z8H0qQnvzqVZZVLxftWthJGzDszsuddunhaa3/llvUv9jRc0h/SA1DNY32GOklzVpedrZufr8b9q+YeTzpDvPctz/g0mq5+x4DNonXNO+idmn/o0oKbrhSZdY9P9YrY6RylULh+4/uuFJHVVszO76dFafTrQ6vCssggcDUrHH3b9paqp788UxSJt/bIzq8bNQQOqkKQnPY8BsRDM/Vk4AHqpbThYKSJ2uut3u8diIgR3FFGrHKE9mQQeqDVVWkM6U9snuEIMuNRKo06NawDqjVciBWkAbQ+ndr7xwDqy20b3ha/UwQCb4zmzlhYgxSKVIj1yCKj9ADoUCkjGXVjBz5UXFL3dqBfeDKpVDvr9DIvlQw0l2l06TAXo3mghQ0E79zGJahVkOMY+6UwCKYgZAF7QKsxxiHnWnABTFDIAuaBVmOcQ86k4BKIrZHAHNSQDECIAYARAjAGIEQIwAiBEAMQIgRgDECIAYARAjAGIEQIwAiFEKQK9PHllqZELTZN25Enar24pWelo2XsmyO7fAWtQmxbK/5KYSAJIHwwHSJpRJ4n7WgN2qXzvPpjS/b15VglN37mR5LEktD9VfckvxAYniN98ygIyJykoSrj+k3aoyujqfyam+FIudfVWWNGvSaUllf5Tv+0tuKT6gfz2zVcyY+HmQOi/nMxvs7x/343wStbbYP7zcT+xBATGIFp/sMdVbtQd1J9/Kqqrcwr66E8CMBa38qQj2l9zQlIBUzHBm1dqtaoJW6Twdm1OpX/sS5MhCrJSL9Zfc0pSAaJq+u0oct1KL8zfnLm1h6rV3Ko602D/s1C77S27pHQAidU5W10F5vbGv7sWwrYVZl2XzTgBpR3cl/dmtexVUuzzDUrav7jM+/T3qRhXzSjecvKPoPkq71f1cYOr+qdCrX61/9FjWjY6iXzomLjUYARAjAGIEQIwAiBEAMQIgRgDECIAYARAjAGIEQIwAiBEAMQIgRgDECIAYARAjAGIEQIwAiBEAMQIgRgDECIAYARAjAGKUHyC6jV44bsd7PKIytnIEpBKbqq4kBACqj4A6c8UAqD6RUek7+gnaEsxf1/RGJ/p6LSsfS9kCUi92cb7Dmp59SwvRrfoe/5ZC2QIiDirnmRJclefIN/K1MzYlVI6AWolila5aOu/8sP5w0fpV5wloSd5i3Ki4/fmuCejmJ6/Uy3jKFJB+wIdKH9+3AK28HyUcSbkCqktak5myd6uiDWjkI+JClS0gWjlVO0+xagEau5pqoLIFpLo7auHqkpr3BiCfh8fEU36AMhMAMQIgRgDECIAYARAjAGIEQIwAiBEAMQIgRgDECIAYARAjAGIEQIwAiBEAMQIgRgDECIAYARAjAGIEQIz+Dxgg9OVUcRGmAAAAAElFTkSuQmCC" /><!-- --><img src="data:image/png;base64,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" /><!-- --> <br> <em>Figure 2. Caterpillar plots of the residuals at each level of the model</em></p>
+<p><br></p>
+<p>To aid the interpretability of the plots, the residuals are scaled by the standard error of the residuals from the OLS estimate of the index (by <span class="math inline">\(\sigma_\epsilon\)</span>). Tower Hamlets and Newham clearly are different from other LADs, with a statistically significant residual difference between the share of the Bangladeshi population and the share of the White British population due to their LAD effect. At the MSOA level, E02001113 stands apart from the rest; at the regional level so does London but looking at the value for the scaled residual it does not seem especially significant.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+</div>
+<div id="considering-the-effect-of-particular-places-upon-the-index" class="section level3">
+<h3>Considering the effect of particular places upon the index</h3>
+<p>What would happen to the ID if the effect of Tower Hamlets and Newham, were omitted? Let’s find out.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prd &lt;-<span class="st"> </span><span class="kw">effect</span>(index, <span class="dt">places =</span> <span class="kw">c</span>(<span class="st">&quot;Tower Hamlets&quot;</span>, <span class="st">&quot;Newham&quot;</span>))
+prd</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit 
+##          ID1   ID2   ID3
+## before 0.772 0.772 0.772
+## after  0.703 0.131 0.365
+## 
+## R-squared: 0.381    Impact 1918
+## 
+## Note:
+## ID1: if the residual effect of Tower Hamlets Newham is set to zero
+## ID2: if the shares of Bangladeshi &amp; WhiteBrit are equal everywhere except Tower Hamlets Newham
+## ID3: the index value for Tower Hamlets Newham alone</code></pre>
+<p>The function evaluates what the value of the ID would be under three different scenarios to give an indication of the effects of the named places upon the current ID. The first is if the LAD level residual effects (<span class="math inline">\(\xi_l\)</span>) were set to zero for Tower Hamlets and Newham, i.e. if <span class="math display">\[\text{ID}= 0.5\sum_i|\hat\lambda_i + \hat\mu_j + \hat\nu_k + w_l\;\hat\xi_l|\]</span> where <span class="math inline">\(w_l = 0\)</span> for Tower Hamlets and Newham, and <span class="math inline">\(1\)</span> for every other LAD. In the present example, it reduces the ID from 0.772 to 0.703, which is 91.1 per cent of the original value.</p>
+<p>The second is what the ID would be if the shares of the two population groups were equal, <span class="math inline">\(\epsilon_i = y_i - x_i = 0\)</span>, everywhere except Tower Hamlets and Newham. The result is an ID score of 0.131, meaning that Tower Hamlets’ and Newham’s neighbourhoods contribute 0.131 <span class="math inline">\(\div\)</span> 0.772 <span class="math inline">\(\times\)</span> 100 per cent of the total ID, which is 17 per cent. Measured in relation to the percentage of neighbourhoods that are in Tower Hamlets and Newham gives an impact score of 1918 - 19.18 times greater than expected.</p>
+<p>The third calculates the standard ID <em>only</em> for Tower Hamlets and Newham; that is, if all but the data for those two places are omitted from the calculation. The resulting ID is 0.365. Within Tower Hamlets and Newham the Bangladeshi and White British populations are more evenly distributed than they are across the whole of England and Wales. However, this finding is based on what remains of the two groups when everyone living outside of Tower Hamlets and Newham is excluded. It remains the cases that larger shares of the White British are found outside of Tower Hamlets and Newham whereas larger shares of the Bangladeshis are found within them.</p>
+<p>A final measure is the R-square of 0.381. This is the proportion of the variation in <span class="math inline">\(\epsilon_i = y_i - x_i\)</span>, i.e. the base level differences in the shares of the Bangladeshi and White British populations, that can be attributed to those places being in Tower Hamlets or Newham. It is a sizable proportion. It seems that Tower Hamlets and Newham are having a strong impact on the ID.</p>
+<p>Extending the analysis, we can examine the effect of Tower Hamlets, Newham and the MSOA E02001113 upon the index,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">effect</span>(index, <span class="dt">places =</span> <span class="kw">c</span>(<span class="st">&quot;Tower Hamlets&quot;</span>, <span class="st">&quot;Newham&quot;</span>, <span class="st">&quot;E02001113&quot;</span>))</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit 
+##          ID1   ID2   ID3
+## before 0.772 0.772 0.772
+## after  0.697 0.139 0.373
+## 
+## R-squared: 0.45    Impact 1996
+## 
+## Note:
+## ID1: if the residual effect of Tower Hamlets Newham E02001113 is set to zero
+## ID2: if the shares of Bangladeshi &amp; WhiteBrit are equal everywhere except Tower Hamlets Newham E02001113
+## ID3: the index value for Tower Hamlets Newham E02001113 alone</code></pre>
+<p>E02001113 appears to be a residential area of Oldham in North West England located by Royal Oldham Hospital and containing high numbers of Bangladeshis: <a href="https://mapit.mysociety.org/area/34992.html">view map</a>. Like Tower Hamlets and Newham it too appears to be an ‘outlier’ with an unusually high share of the Bangladeshi population.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">aggdata[aggdata$MSOA ==<span class="st"> &quot;E02001113&quot;</span>,]</code></pre></div>
+<pre><code>##            LSOA Persons WhiteBrit Irish OtherWhite Mixed Indian Pakistani
+## 26226 E01005349    2424        54     7          6    23     12        84
+## 26248 E01005351    1986       237     3         13    13     20        53
+## 26233 E01005352    1449       356     2          9    16     15        54
+## 26237 E01005353    1913       385     5         47    37     24        80
+## 26242 E01005354    1764       617     5         20    32     50        74
+##       Bangladeshi Chinese OtherAsian BlkAfrican BlkCaribbean OtherBlk Arab
+## 26226        2190       5         17          8            4        4    0
+## 26248        1605       1          2         16            5       17    0
+## 26233         953       6          7         15            9        5    0
+## 26237        1176       2         32         90           10       11    0
+## 26242         904      11         13         20           10        2    4
+##       Other      MSOA    LAD        RGN
+## 26226    10 E02001113 Oldham North West
+## 26248     1 E02001113 Oldham North West
+## 26233     2 E02001113 Oldham North West
+## 26237    13 E02001113 Oldham North West
+## 26242     2 E02001113 Oldham North West</code></pre>
+</div>
+<div id="refitting-the-multilevel-index" class="section level3">
+<h3>Refitting the multilevel index</h3>
+<p>Having identified the ‘outliers’, a next step is to refit the multilevel index with Tower Hamlets, Newham and E02001113 omitted.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">newindex &lt;-<span class="st"> </span><span class="kw">id</span>(aggdata, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">&quot;Bangladeshi&quot;</span>, <span class="st">&quot;WhiteBrit&quot;</span>), <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;MSOA&quot;</span>,<span class="st">&quot;LAD&quot;</span>,<span class="st">&quot;RGN&quot;</span>), <span class="dt">omit =</span> <span class="kw">c</span>(<span class="st">&quot;Tower Hamlets&quot;</span>, <span class="st">&quot;Newham&quot;</span>, <span class="st">&quot;E02001113&quot;</span>))
+newindex</code></pre></div>
+<pre><code>## Bangladeshi ~ WhiteBrit 
+## ID:  0.733
+## E(ID):   (not calculated)
+## 
+##      Pvariance Holdback
+## Base     37.36   -10.87
+## MSOA     46.59   -14.11
+## LAD      11.62    -4.21
+## RGN       4.44   -16.05</code></pre>
+<p>The ID increases slightly from 0.772 to 0.733 but the more interesting change is in the measure of spatial clustering, Pvariance. This has changed from</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">attr</span>(index, <span class="st">&quot;variance&quot;</span>)</code></pre></div>
+<pre><code>##  Base  MSOA   LAD   RGN 
+## 25.41 32.42 35.92  6.25</code></pre>
+<p>to</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">attr</span>(newindex, <span class="st">&quot;variance&quot;</span>)</code></pre></div>
+<pre><code>##  Base  MSOA   LAD   RGN 
+## 37.36 46.59 11.62  4.44</code></pre>
+<p>which is an increase/decrease of</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">attr</span>(newindex, <span class="st">&quot;variance&quot;</span>) -<span class="st"> </span><span class="kw">attr</span>(index, <span class="st">&quot;variance&quot;</span>)</code></pre></div>
+<pre><code>##   Base   MSOA    LAD    RGN 
+##  11.95  14.17 -24.30  -1.81</code></pre>
+<p>What it reveals is a ‘step down’ from the LAD to the MSOA and LSOA (Base) scales.</p>
+<p>Overall, the following observations may be drawn:</p>
+<ul>
+<li>The residential segregation of the Bangladeshi from the White British is high across England and Wales (although actually it decreased from the 2001 to the 2011 Census)</li>
+<li>The scale of segregation is highest at the local authority (LAD) scale</li>
+<li>That is because of the effects of Tower Hamlets and Newham</li>
+<li>Omitting Tower Hamlets and Newham (and also MSOA E02001113) leaves the dominant scales of segregation as the MSOA and LSOA levels</li>
+</ul>
+<p><br></p>
+</div>
+</div>
+<div id="closing-comments" class="section level2">
+<h2>Closing Comments</h2>
+<p>Within the segregation literature there has been a movement away from measuring ethnic segregation at a single scale and using traditional indices, to treating segregation as a multiscale phenomenon about which measurement at a range of scales will shed knowledge. That literature has been the inspiration for this work. Amongst the contributions, several authors have promoted multilevel modelling as a way of looking at segregation at multiple scales of a geographic hierarchy simultaneously. The MLID package takes forward the approach by outlining a multilevel index of dissimilarity that combines the advantages of using a widely-understood index with a means to identify scale effects in a way that is computationally fast to estimate and easily fitted in R.</p>
+<div id="acknowledgements" class="section level3">
+<h3>Acknowledgements</h3>
+<p>My thanks to Dewi Owen for thoughtful observations and comments, and for good company</p>
+<p>The package development was funded partly under the ESRC’s <a href="http://ubdc.ac.uk/">Urban Big Data Centre</a>, grant ES/L011921/1.</p>
+<p>Census data: Office for National Statistics; National Records of Scotland; Northern Ireland Statistics and Research Agency (2016): 2011 Census aggregate data. UK Data Service (Edition: June 2016). DOI: (<a href="http://dx.doi.org/10.5257/census/aggregate-2011-1" class="uri">http://dx.doi.org/10.5257/census/aggregate-2011-1</a>). The information is licensed under the terms of the Open Government Licence (<a href="http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3" class="uri">http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3</a>).</p>
+<p>The LSOA, MSOA, LAD and RGN codes are from (<a href="http://bit.ly/2lGMdkE" class="uri">http://bit.ly/2lGMdkE</a>) and are supplied under the Open Government Licence: Contains National Statistics data. Crown copyright and database right 2017.</p>
+</div>
+<div id="references" class="section level3">
+<h3>References</h3>
+<p>Harris R 2017 <a href="http://bit.ly/2lQ4r0n">Measuring the scales of segregation: Looking at the residential separation of White British and other school children in England using a multilevel index of dissimilarity</a>, <em>Transactions of the Institute of British Geographers</em> in press</p>
+<p>see also:</p>
+<p>Jones K Johnston R Manley D Owen D and Charlton C 2015 Ethnic Residential Segregation: A Multilevel Multigroup Multiscale Approach Exemplified by London in 2011 <em>Demography</em> 52 1995-2019</p>
+<p>Leckie G and Goldstein H 2015 A multilevel modelling approach to measuring changing patterns of ethnic composition and segregation among London secondary schools 2001–2010 <em>Journal of the Royal Statistical Society Series A</em> 178 405-424</p>
+<p>Leckie G Pillinger R Jones K and Goldstein H 2012 Multilevel modelling of Social Segregation <em>Journal of Educational and Behavioral Statistics</em> 37 3-30</p>
+<p>Manley D Johnston R Jones K and Owen D 2015 Macro- Meso- and Microscale Segregation: Modeling Changing Ethnic Residential Patterns in Auckland New Zealand 2001-2013 <em>Annals of the Association of American Geographers</em> 105 951-967</p>
+<p>Owen D 2015 Measuring residential segregation in England and Wales: a model-based approach Unpublished PhD thesis School of Geographical Sciences, University of Bristol</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>The ‘stray’ cell in examples 2-4 is to allow the model to be fitted. With it, the model correctly identifies that some of the variation remains at the base level.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Specifically, the standard error of the residuals from the regression used to fit the model<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>If it isn’t supplied, it will be estimated as the sum of the X and Y populations per neighbourhood, and will generate a warning.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>The width of the confidence interval is adjusted for a test of difference between two means (see <em>Statistical Rules of Thumb</em> by Gerald van Belle, 2011, eq 2.18). A 95 per cent confidence interval, for example, extends to 1.39 times the standard error around the mean and not 1.96.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>The caterpillar plots employ what might be considered to be intelligent plotting in that only a maximum of 50 residuals are shown on each plot. These are the 10 highest and lowest ranked residuals and then a sample of 30 from the remaining residuals, chosen as the ones with values that differ most from the residuals that precede them by ranking. In this way, the plots aim to preserve the tails of the ranked distribution as well as the most important break points in-between.<a href="#fnref5">↩</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
