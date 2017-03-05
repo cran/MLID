@@ -1,12 +1,12 @@
 Package: MLID
 Type: Package
 Title: Multilevel Index of Dissimilarity
-Version: 1.0.0
+Version: 1.0.1
 Author: Richard Harris [aut],
   Dewi Owen [ctb]
 Maintainer: Richard Harris <rich.harris@bris.ac.uk>
 Description: Tools and functions to fit a multilevel index of dissimilarity.
-Depends: R (>= 3.0.2)
+Depends: R (>= 3.3.0)
 URL: https://github.com/profrichharris/MLID
 BugReports: https://github.com/profrichharris/MLID/issues
 License: GPL-3
@@ -17,6 +17,6 @@ RoxygenNote: 6.0.1
 Suggests: raster (>= 2.5.8), sp (>= 1.2.3), knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2017-02-23 14:06:10 UTC; ggrjh
+Packaged: 2017-03-05 20:45:04 UTC; profr
 Repository: CRAN
-Date/Publication: 2017-02-23 17:30:59
+Date/Publication: 2017-03-06 00:18:37
